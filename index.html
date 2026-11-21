@@ -193,7 +193,7 @@
       display: block;
     }
 
-    /* Brain Dump Input */
+    /* Brain Dump & Win Inputs */
     .dump-row {
       display: flex;
       gap: 10px;
@@ -201,7 +201,7 @@
     }
 
     .dump-row input[type="text"] {
-      flex: 1 1 260px;
+      flex: 1 1 240px;
       padding: 12px 14px;
       border: 1.5px solid var(--border);
       border-radius: 12px;
@@ -371,29 +371,6 @@
 
     .task-label {
       word-break: break-word;
-    }
-
-    .badge {
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 999px;
-      flex-shrink: 0;
-    }
-
-    .badge-quick {
-      background: var(--amber-light);
-      color: #945d19;
-    }
-
-    .badge-park {
-      background: var(--lavender-light);
-      color: var(--lavender);
-    }
-
-    .badge-dump {
-      background: #eceae3;
-      color: #5b5e59;
     }
 
     .task-actions {
@@ -582,8 +559,12 @@
         <div class="card-title">✨ 5. Reverse To-Do List (Today's Wins)</div>
       </div>
       <div class="guide-note">
-        <strong>What to do here:</strong> Every task you check off lands here automatically. Tap the quick self-care buttons below to give yourself credit for basic human maintenance too.
+        <strong>What to do here:</strong> Every task you check off lands here automatically. You can also type anything you already accomplished below or tap the quick self-care buttons to give yourself credit.
       </div>
+      <form class="dump-row" id="winForm" style="margin-bottom: 12px;">
+        <input type="text" id="winInput" placeholder="Log something you already did today... (press Enter)" autocomplete="off" />
+        <button type="submit" class="btn-primary">+ Add Win</button>
+      </form>
       <div class="care-chips">
         <button class="chip-btn" data-care="💧 Drank water">+ Drank water</button>
         <button class="chip-btn" data-care="🥪 Ate real food">+ Ate food</button>
@@ -726,7 +707,7 @@
       // Wins
       const winsList = document.getElementById("winsList");
       if (state.wins.length === 0) {
-        winsList.innerHTML = `<li class="empty-state">Completed items and self-care wins will stack up here.</li>`;
+        winsList.innerHTML = `<li class="empty-state">Completed items, custom wins, and self-care chips will stack up here.</li>`;
       } else {
         winsList.innerHTML = state.wins.map((w, idx) => `
           <li class="win-item">
@@ -880,6 +861,17 @@
         text,
         category: cat
       });
+      input.value = "";
+      saveState();
+      render();
+    });
+
+    document.getElementById("winForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const input = document.getElementById("winInput");
+      const text = input.value.trim();
+      if (!text) return;
+      state.wins.unshift(text);
       input.value = "";
       saveState();
       render();
