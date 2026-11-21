@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MeloFlow — Guided ADHD Brain Dump & Triage</title>
+  <style>
+    :root {
+      --bg: #f6f4ef;
+      --surface: #ffffff;
+      --surface-soft: #fbfaf7;
+      --surface-tint: #eef3ee;
+      --border: #e3dfd5;
+      --text: #2a2d2a;
+      --muted: #686d67;
+      --sage: #4f7766;
+      --sage-dark: #3b5d4e;
+      --sage-light: #e5efe9;
+      --amber: #c98636;
+      --amber-light: #fbf1e3;
+      --lavender: #6d6896;
+      --lavender-light: #efeff7;
+      --rose: #b85d5d;
+      --radius: 16px;
+      --shadow: 0 4px 18px rgba(42, 45, 42, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 20px 16px 64px;
+    }
+
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 2px;
+    }
+
+    .brand h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--sage-dark);
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: all 0.16s ease;
+    }
+
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      border-color: #cbc5b8;
+    }
+
+    .btn-primary {
+      background: var(--sage);
+      color: #fff;
+      padding: 10px 16px;
+    }
+
+    .btn-primary:hover {
+      background: var(--sage-dark);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .guide-note {
+      background: var(--surface-soft);
+      border-left: 3px solid var(--sage);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .guide-note strong {
+      color: var(--text);
+    }
+
+    /* Energy Check-in */
+    .energy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .energy-btn {
+      background: var(--surface-soft);
+      border: 1.5px solid var(--border);
+      padding: 12px;
+      text-align: left;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .energy-btn span.label {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--text);
+    }
+
+    .energy-btn span.sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .energy-btn.active {
+      background: var(--sage-light);
+      border-color: var(--sage);
+    }
+
+    .energy-feedback {
+      margin-top: 12px;
+      font-size: 0.88rem;
+      color: var(--sage-dark);
+      background: var(--surface-tint);
+      padding: 10px 12px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .energy-feedback.visible {
+      display: block;
+    }
+
+    /* Brain Dump Input */
+    .dump-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .dump-row input[type="text"] {
+      flex: 1 1 260px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.96rem;
+      background: var(--surface-soft);
+      color: var(--text);
+      outline: none;
+    }
+
+    .dump-row input[type="text"]:focus {
+      border-color: var(--sage);
+      background: #fff;
+    }
+
+    .dump-row select {
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface-soft);
+      color: var(--text);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    /* Rule of One */
+    .rule-of-one {
+      border: 2px solid var(--sage);
+      background: linear-gradient(180deg, #f3f8f5 0%, #ffffff 100%);
+    }
+
+    .rule-empty {
+      text-align: center;
+      padding: 18px 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      border: 1.5px dashed #bfd1c7;
+      border-radius: 12px;
+    }
+
+    .rule-active-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .rule-task-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border: 1px solid #cde0d5;
+      padding: 14px;
+      border-radius: 12px;
+    }
+
+    .rule-task-text {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--sage-dark);
+    }
+
+    .micro-step-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .micro-step-row label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--sage-dark);
+    }
+
+    .micro-step-row input {
+      padding: 10px 12px;
+      border: 1px solid #cde0d5;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      background: #fff;
+    }
+
+    .timer-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--surface-tint);
+      padding: 10px 14px;
+      border-radius: 12px;
+    }
+
+    .timer-display {
+      font-size: 1.25rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--sage-dark);
+    }
+
+    .timer-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .timer-controls button {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      background: #fff;
+      border: 1px solid #c7d8ce;
+      color: var(--sage-dark);
+    }
+
+    .timer-controls button:hover {
+      background: var(--sage);
+      color: #fff;
+    }
+
+    /* Two-column triage */
+    .triage-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 680px) {
+      .triage-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .task-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      font-size: 0.92rem;
+    }
+
+    .task-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-left input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--sage);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .task-label {
+      word-break: break-word;
+    }
+
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
+    .badge-quick {
+      background: var(--amber-light);
+      color: #945d19;
+    }
+
+    .badge-park {
+      background: var(--lavender-light);
+      color: var(--lavender);
+    }
+
+    .badge-dump {
+      background: #eceae3;
+      color: #5b5e59;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      background: transparent;
+      padding: 5px 7px;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      color: var(--muted);
+    }
+
+    .icon-btn:hover {
+      background: #eae6dc;
+      color: var(--text);
+    }
+
+    .empty-state {
+      font-size: 0.85rem;
+      color: var(--muted);
+      padding: 10px 4px;
+      font-style: italic;
+    }
+
+    /* Wins & Care Chips */
+    .care-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .chip-btn {
+      background: var(--sage-light);
+      color: var(--sage-dark);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .chip-btn:hover {
+      background: var(--sage);
+      color: #fff;
+    }
+
+    .win-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #f5f8f6;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      color: var(--sage-dark);
+    }
+
+    /* Prompt Box */
+    .prompt-box {
+      background: var(--amber-light);
+      border: 1px solid #edd9bc;
+    }
+
+    .prompt-text {
+      font-size: 0.96rem;
+      font-weight: 600;
+      color: #5c3d16;
+      margin-bottom: 10px;
+    }
+
+    .prompt-box textarea {
+      width: 100%;
+      min-height: 74px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #e2cba9;
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: vertical;
+      background: #fffdf9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <h1>🌿 MeloFlow — Guided Brain Dump & Triage</h1>
+        <p>Externalize the mental noise. Pick one thing. Be kind to your brain.</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-ghost" id="resetDayBtn" title="Clear completed wins and start fresh">Fresh Day Reset</button>
+      </div>
+    </header>
+
+    <!-- 1. Energy Check-In -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">🔋 1. Mental Battery Check-In</div>
+      </div>
+      <div class="guide-note">
+        <strong>What to do here:</strong> Tap how your brain feels right now. Matching your task size to your actual fuel stops procrastination before it starts.
+      </div>
+      <div class="energy-grid" id="energyGrid">
+        <button class="energy-btn" data-energy="low">
+          <span class="label">🪫 Low / Foggy</span>
+          <span class="sub">Survival mode, tiny steps</span>
+        </button>
+        <button class="energy-btn" data-energy="steady">
+          <span class="label">🔋 Steady</span>
+          <span class="sub">Normal pace, one thing at a time</span>
+        </button>
+        <button class="energy-btn" data-energy="charged">
+          <span class="label">⚡ Charged</span>
+          <span class="sub">Ready to tackle a real task</span>
+        </button>
+        <button class="energy-btn" data-energy="hyperfocus">
+          <span class="label">🚀 Hyperfocus</span>
+          <span class="sub">High drive—guard against rabbit holes</span>
+        </button>
+      </div>
+      <div class="energy-feedback" id="energyFeedback"></div>
+    </section>
+
+    <!-- 2. Mental Tab Close -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">🧠 2. Mental Tab Close (Brain Dump)</div>
+      </div>
+      <div class="guide-note">
+        <strong>What to do here:</strong> Type every task, random thought, worry, or side-quest rattling around in your head and press <strong>Enter</strong>. Don't organize yet—just get it out of your RAM.
+      </div>
+      <form class="dump-row" id="dumpForm">
+        <input type="text" id="dumpInput" placeholder="Get it out of your head... (press Enter)" autocomplete="off" />
+        <select id="dumpCategory" aria-label="Category">
+          <option value="unsorted">📥 Unsorted Dump</option>
+          <option value="quick">⚡ 5-Min Quick Win</option>
+          <option value="park">🅿️ Later, Not Never</option>
+        </select>
+        <button type="submit" class="btn-primary">Dump It</button>
+      </form>
+      <ul class="task-list" id="unsortedList" style="margin-top: 14px;"></ul>
+    </section>
+
+    <!-- 3. The Rule of One -->
+    <section class="card rule-of-one">
+      <div class="card-header">
+        <div class="card-title">👑 3. The Rule of One</div>
+      </div>
+      <div class="guide-note">
+        <strong>What to do here:</strong> Click the <strong>👑 crown</strong> on any task below to make it your single main win for today. Break it into a tiny 2-minute starter step so your brain doesn't freeze.
+      </div>
+      <div id="ruleOfOneContent"></div>
+    </section>
+
+    <!-- 4. Quick Wins & Parking Lot -->
+    <div class="triage-grid">
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">⚡ 5-Min Dopamine Wins</div>
+        </div>
+        <div class="guide-note">
+          <strong>What to do here:</strong> Keep tiny, low-effort tasks here (replying to one text, clearing one dish). Knock one out whenever you feel stuck to build quick momentum.
+        </div>
+        <ul class="task-list" id="quickList"></ul>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title">🅿️ Later, Not Never</div>
+        </div>
+        <div class="guide-note">
+          <strong>What to do here:</strong> Park cool ideas, impulse projects, and non-urgent tasks here. They are safe—you won't forget them, and they won't hijack today.
+        </div>
+        <ul class="task-list" id="parkList"></ul>
+      </section>
+    </div>
+
+    <!-- 5. Reverse To-Do List -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">✨ 5. Reverse To-Do List (Today's Wins)</div>
+      </div>
+      <div class="guide-note">
+        <strong>What to do here:</strong> Every task you check off lands here automatically. Tap the quick self-care buttons below to give yourself credit for basic human maintenance too.
+      </div>
+      <div class="care-chips">
+        <button class="chip-btn" data-care="💧 Drank water">+ Drank water</button>
+        <button class="chip-btn" data-care="🥪 Ate real food">+ Ate food</button>
+        <button class="chip-btn" data-care="💊 Took meds / supplements">+ Took meds</button>
+        <button class="chip-btn" data-care="📱 Replied to a message">+ Sent text</button>
+        <button class="chip-btn" data-care="🛋️ Took a guilt-free rest">+ Rested</button>
+      </div>
+      <ul class="task-list" id="winsList"></ul>
+    </section>
+
+    <!-- 6. Gentle Prompt -->
+    <section class="card prompt-box">
+      <div class="card-header">
+        <div class="card-title">💬 6. Gentle Unsticking Prompt</div>
+        <button class="btn-ghost" id="nextPromptBtn">Shuffle Prompt ↻</button>
+      </div>
+      <div class="guide-note" style="background: rgba(255,255,255,0.65); border-left-color: var(--amber);">
+        <strong>What to do here:</strong> Feeling friction or overwhelm? Answer this quick prompt in 1–2 messy sentences to lower the pressure.
+      </div>
+      <div class="prompt-text" id="promptText"></div>
+      <textarea id="promptAnswer" placeholder="Write a quick, unfiltered thought..."></textarea>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "meloflow_adhd_triage_guided_v1";
+
+    const ENERGY_MESSAGES = {
+      low: "Low battery mode: Lower the bar to the floor. Pick ONE tiny task or a 5-minute quick win, and let everything else wait.",
+      steady: "Steady fuel: Great for knocking out your Rule of One in a single 15-minute sprint.",
+      charged: "Charged up: Tackle the hardest step of your Rule of One right now before decision fatigue sets in.",
+      hyperfocus: "Hyperfocus alert: Set a 25-minute timer and drink water so you don't accidentally spend 3 hours on a side-quest!"
+    };
+
+    const PROMPTS = [
+      "What is the literal, ridiculously small first physical action for your main task? (e.g., 'Open the tab', not 'Do taxes')",
+      "Where is perfectionism stalling you today? What does a 'B-minus, done-is-better-than-perfect' version look like?",
+      "Look around your space: what is one 2-minute pile of clutter draining your background energy?",
+      "Why does your avoided task feel heavy right now—is it boring, unclear, or missing a tool? How can you make it 20% easier?",
+      "What is one tiny thing you can set out right now so Tomorrow-You has an easier start?"
+    ];
+
+    let state = {
+      energy: null,
+      tasks: [],
+      ruleOfOneId: null,
+      microStep: "",
+      wins: [],
+      promptIndex: 0,
+      promptAnswer: ""
+    };
+
+    let timerSeconds = 15 * 60;
+    let timerInterval = null;
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) state = { ...state, ...JSON.parse(saved) };
+      } catch (e) {}
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function render() {
+      // Energy
+      document.querySelectorAll(".energy-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.energy === state.energy);
+      });
+      const feedback = document.getElementById("energyFeedback");
+      if (state.energy && ENERGY_MESSAGES[state.energy]) {
+        feedback.textContent = ENERGY_MESSAGES[state.energy];
+        feedback.classList.add("visible");
+      } else {
+        feedback.classList.remove("visible");
+      }
+
+      // Rule of One
+      const ruleContainer = document.getElementById("ruleOfOneContent");
+      const ruleTask = state.tasks.find(t => t.id === state.ruleOfOneId);
+
+      if (!ruleTask) {
+        state.ruleOfOneId = null;
+        ruleContainer.innerHTML = `<div class="rule-empty">No Rule of One selected yet. Dump a task above and click <strong>👑</strong> to lock in your single priority.</div>`;
+      } else {
+        ruleContainer.innerHTML = `
+          <div class="rule-active-box">
+            <div class="rule-task-bar">
+              <div class="task-left">
+                <input type="checkbox" id="ruleCompleteCheck" aria-label="Complete Rule of One" />
+                <span class="rule-task-text">${escapeHtml(ruleTask.text)}</span>
+              </div>
+              <button class="btn-ghost" id="unpinRuleBtn">Unpin</button>
+            </div>
+            <div class="micro-step-row">
+              <label for="microStepInput">First 2-Minute Micro-Step (make it almost too easy):</label>
+              <input type="text" id="microStepInput" value="${escapeHtml(state.microStep)}" placeholder="e.g., Open document and write one messy sentence..." />
+            </div>
+            <div class="timer-bar">
+              <div class="timer-display" id="timerDisplay">${formatTime(timerSeconds)}</div>
+              <div class="timer-controls">
+                <button type="button" data-mins="5">5m</button>
+                <button type="button" data-mins="15">15m</button>
+                <button type="button" data-mins="25">25m</button>
+                <button type="button" id="timerToggleBtn">${timerInterval ? "Pause" : "Start"}</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("ruleCompleteCheck").addEventListener("change", () => completeTask(ruleTask.id));
+        document.getElementById("unpinRuleBtn").addEventListener("click", () => {
+          state.ruleOfOneId = null;
+          saveState();
+          render();
+        });
+        document.getElementById("microStepInput").addEventListener("input", e => {
+          state.microStep = e.target.value;
+          saveState();
+        });
+        ruleContainer.querySelectorAll("[data-mins]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            stopTimer();
+            timerSeconds = parseInt(btn.dataset.mins, 10) * 60;
+            updateTimerDisplay();
+          });
+        });
+        document.getElementById("timerToggleBtn").addEventListener("click", toggleTimer);
+      }
+
+      // Lists
+      renderTaskList("unsortedList", state.tasks.filter(t => t.category === "unsorted" && t.id !== state.ruleOfOneId), "Nothing floating in your unsorted dump right now.");
+      renderTaskList("quickList", state.tasks.filter(t => t.category === "quick" && t.id !== state.ruleOfOneId), "No 5-minute quick wins queued yet.");
+      renderTaskList("parkList", state.tasks.filter(t => t.category === "park" && t.id !== state.ruleOfOneId), "Parking lot is empty.");
+
+      // Wins
+      const winsList = document.getElementById("winsList");
+      if (state.wins.length === 0) {
+        winsList.innerHTML = `<li class="empty-state">Completed items and self-care wins will stack up here.</li>`;
+      } else {
+        winsList.innerHTML = state.wins.map((w, idx) => `
+          <li class="win-item">
+            <span>✅ ${escapeHtml(w)}</span>
+            <button class="icon-btn" data-del-win="${idx}" title="Remove">✕</button>
+          </li>
+        `).join("");
+        winsList.querySelectorAll("[data-del-win]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.wins.splice(parseInt(btn.dataset.delWin, 10), 1);
+            saveState();
+            render();
+          });
+        });
+      }
+
+      // Prompt
+      document.getElementById("promptText").textContent = PROMPTS[state.promptIndex % PROMPTS.length];
+      document.getElementById("promptAnswer").value = state.promptAnswer || "";
+    }
+
+    function renderTaskList(elementId, items, emptyText) {
+      const ul = document.getElementById(elementId);
+      if (items.length === 0) {
+        ul.innerHTML = `<li class="empty-state">${emptyText}</li>`;
+        return;
+      }
+      ul.innerHTML = items.map(t => `
+        <li class="task-item">
+          <div class="task-left">
+            <input type="checkbox" data-check="${t.id}" aria-label="Complete task" />
+            <span class="task-label">${escapeHtml(t.text)}</span>
+          </div>
+          <div class="task-actions">
+            <button class="icon-btn" data-crown="${t.id}" title="Make Rule of One">👑</button>
+            ${t.category !== "quick" ? `<button class="icon-btn" data-move="${t.id}:quick" title="Move to 5-Min Quick Wins">⚡</button>` : ""}
+            ${t.category !== "park" ? `<button class="icon-btn" data-move="${t.id}:park" title="Move to Later, Not Never">🅿️</button>` : ""}
+            <button class="icon-btn" data-del="${t.id}" title="Delete">✕</button>
+          </div>
+        </li>
+      `).join("");
+
+      ul.querySelectorAll("[data-check]").forEach(cb => {
+        cb.addEventListener("change", () => completeTask(cb.dataset.check));
+      });
+      ul.querySelectorAll("[data-crown]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.ruleOfOneId = btn.dataset.crown;
+          state.microStep = "";
+          saveState();
+          render();
+        });
+      });
+      ul.querySelectorAll("[data-move]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const [id, cat] = btn.dataset.move.split(":");
+          const task = state.tasks.find(t => t.id === id);
+          if (task) task.category = cat;
+          saveState();
+          render();
+        });
+      });
+      ul.querySelectorAll("[data-del]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.tasks = state.tasks.filter(t => t.id !== btn.dataset.del);
+          saveState();
+          render();
+        });
+      });
+    }
+
+    function completeTask(id) {
+      const idx = state.tasks.findIndex(t => t.id === id);
+      if (idx === -1) return;
+      const [task] = state.tasks.splice(idx, 1);
+      if (state.ruleOfOneId === id) {
+        state.ruleOfOneId = null;
+        state.microStep = "";
+        stopTimer();
+      }
+      state.wins.unshift(task.text);
+      saveState();
+      render();
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, "0");
+      const s = (sec % 60).toString().padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function updateTimerDisplay() {
+      const el = document.getElementById("timerDisplay");
+      if (el) el.textContent = formatTime(timerSeconds);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      const btn = document.getElementById("timerToggleBtn");
+      if (btn) btn.textContent = "Start";
+    }
+
+    function toggleTimer() {
+      if (timerInterval) {
+        stopTimer();
+        return;
+      }
+      const btn = document.getElementById("timerToggleBtn");
+      if (btn) btn.textContent = "Pause";
+      timerInterval = setInterval(() => {
+        if (timerSeconds > 0) {
+          timerSeconds--;
+          updateTimerDisplay();
+        } else {
+          stopTimer();
+          alert("Gentle chime: Your sprint timer is up! Take a breath or celebrate your progress.");
+        }
+      }, 1000);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, c => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[c]));
+    }
+
+    // Event Listeners
+    document.querySelectorAll(".energy-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.energy = btn.dataset.energy;
+        saveState();
+        render();
+      });
+    });
+
+    document.getElementById("dumpForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const input = document.getElementById("dumpInput");
+      const cat = document.getElementById("dumpCategory").value;
+      const text = input.value.trim();
+      if (!text) return;
+      state.tasks.unshift({
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        text,
+        category: cat
+      });
+      input.value = "";
+      saveState();
+      render();
+    });
+
+    document.querySelectorAll(".chip-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.wins.unshift(btn.dataset.care);
+        saveState();
+        render();
+      });
+    });
+
+    document.getElementById("nextPromptBtn").addEventListener("click", () => {
+      state.promptIndex = (state.promptIndex + 1) % PROMPTS.length;
+      state.promptAnswer = "";
+      saveState();
+      render();
+    });
+
+    document.getElementById("promptAnswer").addEventListener("input", e => {
+      state.promptAnswer = e.target.value;
+      saveState();
+    });
+
+    document.getElementById("resetDayBtn").addEventListener("click", () => {
+      if (!confirm("Start a fresh day? This clears today's wins and energy check-in, while keeping your Later, Not Never parking lot.")) return;
+      state.wins = [];
+      state.energy = null;
+      state.ruleOfOneId = null;
+      state.microStep = "";
+      state.promptAnswer = "";
+      stopTimer();
+      saveState();
+      render();
+    });
+
+    loadState();
+    render();
+  </script>
+</body>
+</html>
